@@ -108,10 +108,27 @@ def upload_file():
         filename = secure_filename(file.filename)
         file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         file.save(file_path)
+        
+        # Call the image analysis function and get the result
         result = analyze_image(file_path)
-        return jsonify({'result': result})
+
+        # Split the result by two newlines to separate items
+        items = []
+        for item in result.split("\n\n"):
+            item_details = {}
+            # Split each item by single newlines to extract key-value pairs
+            for line in item.split("\n"):
+                if ':' in line:
+                    key, value = line.split(":", 1)
+                    item_details[key.strip()] = value.strip()
+
+            items.append(item_details)
+
+        # Return the parsed result as JSON
+        return jsonify({"items": items})
 
     return jsonify({'error': 'File type not allowed'}), 400
 
+
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0',port='8080',debug=True)

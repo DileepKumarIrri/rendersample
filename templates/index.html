@@ -3,13 +3,131 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Image Analysis</title>
+    <title>Image Freshness Analysis</title>
+    <style>
+        /* Basic styles for the page */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background-color: white;
+            padding: 40px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            width: 80%;
+            max-width: 600px;
+            border-radius: 8px;
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        input[type="file"] {
+            margin-bottom: 20px;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        #result {
+            margin-top: 20px;
+            text-align: left;
+        }
+
+        .error {
+            color: red;
+            font-size: 18px;
+            margin-top: 10px;
+        }
+
+        pre {
+            background-color: #f4f4f9;
+            padding: 10px;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            margin-top: 20px;
+            text-align: left;
+        }
+        
+        .item {
+            margin-bottom: 15px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .item h2 {
+            font-size: 18px;
+            color: #333;
+        }
+
+        .item p {
+            font-size: 14px;
+            color: #555;
+        }
+
+        .status {
+            font-weight: bold;
+        }
+    </style>
 </head>
 <body>
-    <h1>Upload an Image for Freshness Analysis</h1>
-    <form action="/upload" method="post" enctype="multipart/form-data">
-        <input type="file" name="file" accept="image/*">
-        <button type="submit">Upload and Analyze</button>
-    </form>
+    <div class="container">
+        <h1>Upload an Image for Freshness Analysis</h1>
+        <form action="{{ url_for('upload_file') }}" method="POST" enctype="multipart/form-data">
+            <input type="file" name="file" id="file" accept="image/png, image/jpeg, image/jpg" required>
+            <button type="submit">Upload</button>
+        </form>
+        <div id="result">
+            <!-- Dynamic freshness analysis result will be shown here -->
+            {% if freshness_analysis %}
+                <h2>Freshness Analysis Results:</h2>
+                {% for item in freshness_analysis %}
+                    <div class="item">
+                        <h2>{{ item['Item Name'] }}</h2>
+                        <p><strong>Direction:</strong> {{ item['Direction'] }}</p>
+                        <p><strong>Estimated Shelf Life:</strong> {{ item['Estimated Shelf Life'] }}</p>
+                        <p><strong>Firmness Level:</strong> {{ item['Firmness Level'] }}</p>
+                        <p><strong>Freshness Index:</strong> {{ item['Freshness Index'] }}</p>
+                        <p><strong>Status:</strong> <span class="status">{{ item['Status'] }}</span></p>
+                        <p><strong>Surface Texture:</strong> {{ item['Surface Texture'] }}</p>
+                        <p><strong>Visual Color:</strong> {{ item['Visual Color'] }}</p>
+                        <p><strong>Packaging Condition:</strong> {{ item['Packaging Condition'] }}</p>
+                        <p><strong>Recommendation:</strong> {{ item['Recommendation'] }}</p>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p>No results yet. Please upload an image for analysis.</p>
+            {% endif %}
+        </div>
+    </div>
 </body>
 </html>
