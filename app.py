@@ -1,31 +1,40 @@
-# app.py
-
-from flask import Flask, request, jsonify, render_template
-import pickle
-import numpy as np
-
-# Load the trained model
-model_path = 'model.pkl'
-with open(model_path, 'rb') as file:
-    model = pickle.load(file)
+import os
+from flask import Flask, render_template, request, redirect, url_for, send_from_directory
 
 app = Flask(__name__)
 
+# Folder to store uploaded photos
+UPLOAD_FOLDER = 'uploads'
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['ALLOWED_EXTENSIONS'] = {'png', 'jpg', 'jpeg', 'gif'}
+
+# Ensure the upload folder exists
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
+
 @app.route('/')
-def home():
+def index():
     return render_template('index.html')
 
-@app.route('/predict', methods=['POST'])
-def predict():
-    # Extract data from form
-    int_features = [int(x) for x in request.form.values()]
-    final_features = [np.array(int_features)]
-    
-    # Make prediction
-    prediction = model.predict(final_features)
-    output = 'Placed' if prediction[0] == 1 else 'Not Placed'
+@app.route('/upload', methods=['POST'])
+def upload():
+    if 'file' not in request.files:
+        return "No file part"
+    file = request.files['file']
+    if file.filename == '':
+        return "No selected file"
+    if file and allowed_file(file.filename):
+        filename = file.filename
+        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        file.save(filepath)
+        return redirect(url_for('uploaded_file', filename=filename))
+    return "File not allowed"
 
-    return render_template('index.html', prediction_text='Prediction: {}'.format(output))
+@app.route('/uploads/<filename>')
+def uploaded_file(filename):
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     app.run(debug=True)
